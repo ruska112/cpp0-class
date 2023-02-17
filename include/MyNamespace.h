@@ -58,7 +58,7 @@ namespace MyNamespace {
     private:
         std::string _message;
     public:
-        BoxAddingException(std::string message) : _message(message) {}
+        BoxAddingException(std::string message) : _message(std::move(message)) {}
 
         std::string what() {
             return _message;
@@ -74,6 +74,12 @@ namespace MyNamespace {
         double _max_weight;
     public:
         Container(int, int, int, double);
+
+        int get_sum_length();
+
+        int get_sum_width();
+
+        int get_sum_height();
 
         void add_box_by_index(int, Box);
 
@@ -256,9 +262,36 @@ namespace MyNamespace {
     Container::Container(int length, int width, int height, double max_weight) :
             _length(length), _width(width), _height(height), _max_weight(max_weight) {}
 
+    int Container::get_sum_length() {
+        int result = 0;
+        for (Box box: this->_boxes) {
+            result += box.get_length();
+        }
+        return result;
+    }
+
+    int Container::get_sum_width() {
+        int result = 0;
+        for (Box box: this->_boxes) {
+            result += box.get_width();
+        }
+        return result;
+    }
+
+    int Container::get_sum_height() {
+        int result = 0;
+        for (Box box: this->_boxes) {
+            result += box.get_height();
+        }
+        return result;
+    }
+
     void Container::add_box_by_index(int index, Box box) {
         if (index <= _boxes.size() && index >= 0) {
-            if (this->get_sum_weight() + box.get_weight() <= this->_max_weight) {
+            if (this->get_sum_weight() + box.get_weight() <= this->_max_weight &&
+                this->get_sum_length() + box.get_length() <= this->_length &&
+                this->get_sum_width() + box.get_width() <= this->_width &&
+                this->get_sum_height() + box.get_height() <= this->_height) {
                 _boxes.insert(_boxes.cbegin() + index, box);
             } else {
                 throw BoxAddingException("overweight");
@@ -293,11 +326,16 @@ namespace MyNamespace {
     Box Container::get_box(int index) {
         if (index <= _boxes.size() && index >= 0) {
             return _boxes.at(index);
+        } else {
+            throw std::exception();
         }
     }
 
     int Container::add_box(Box box) {
-        if (this->get_sum_weight() + box.get_weight() <= this->_max_weight) {
+        if (this->get_sum_weight() + box.get_weight() <= this->_max_weight &&
+            this->get_sum_length() + box.get_length() <= this->_length &&
+            this->get_sum_width() + box.get_width() <= this->_width &&
+            this->get_sum_height() + box.get_height() <= this->_height) {
             _boxes.push_back(box);
             return static_cast<int>(_boxes.size() - 1);
         } else {
@@ -309,7 +347,7 @@ namespace MyNamespace {
         return _boxes[index];
     }
 
-    std::ostream &operator<<(std::ostream &os, Container container) {
+    std::ostream &operator<<(std::ostream &os, const Container container) {
         os << "Container:\n";
         os << "\tLength: " << container._length;
         os << ", Width: " << container._width;

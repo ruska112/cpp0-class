@@ -41,6 +41,8 @@ int Container::get_sum_value() {
 Box Container::get_box(int index) {
     if (index <= _boxes.size() && index >= 0) {
         return _boxes.at(index);
+    } else {
+        throw std::exception();
     }
 }
 
